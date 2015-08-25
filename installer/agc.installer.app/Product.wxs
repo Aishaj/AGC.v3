@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  
+  <?include Variables.wxi?>
+  
+	<Product Id="$(var.ProductCode)" Name="$(var.ProductName)" Language="1033" Version="$(var.ProductVersion)" Manufacturer="$(var.Manufacturer)" UpgradeCode="$(var.UpgradeCode)">
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+    
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<MediaTemplate EmbedCab="yes" />
+
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+    
+    <PropertyRef Id="NETFRAMEWORK45"/>
+
+    <Condition Message="This application requires .NET Framework 4.5. Please install the .NET Framework then run this installer again.">
+      <![CDATA[NETFRAMEWORK45]]>
+    </Condition>
+
+    <Property Id="INSTALLLOCATION">
+      <RegistrySearch Id="GetInstallLocation" Root="HKLM" Key="SOFTWARE\$(var.ProductName)\Install" Name="InstallLocation" Type="raw" />
+    </Property>
+    
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLLOCATION" Name="$(var.ProductName)" />
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="$(var.ProductName)"/>
+      </Directory>
+      <Directory Id="AppDataFolder">
+      
+      </Directory>
+    </Directory>
+    
+		<Feature Id="ProductFeature" Title="AGC.Installer.App" Level="1">
+			<ComponentGroupRef Id="AGC.GUI_Project" />
+      <ComponentRef Id="ApplicationShortcut" />
+      <ComponentRef Id="PropertiesSavedInRegistry" />
+		</Feature>
+
+    <Component Id="PropertiesSavedInRegistry" Directory="INSTALLLOCATION"  Guid="4ad7c73a-cb05-4b8a-812b-784f2419bccd">
+      <RegistryKey Action="create" Root="HKLM" Key="SOFTWARE\$(var.ProductName)\Install">
+        <RegistryValue Name="InstallLocation" Type="string" Value="[INSTALLLOCATION]"/>
+      </RegistryKey>
+    </Component>
+    
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLLOCATION" ></Property>
+    <UIRef Id="WixUI_InstallDir"/>
+
+    <CustomAction Id="CopySoundFiles" BinaryKey="CopySoundFilesCA" DllEntry="CopySoundFiles" Return="check" Execute="immediate" />
+    <Binary Id="CopySoundFilesCA" SourceFile="$(var.AGC.Installer.CustomActions.TargetDir)$(var.AGC.Installer.CustomActions.TargetName).CA.dll" />
+
+    <Property Id="WixShellExecTarget" Value="[INSTALLLOCATION]readme.txt" />
+    <CustomAction Id="LaunchFile"
+        BinaryKey="WixCA"
+        DllEntry="WixShellExec"
+        Impersonate="yes" />
+
+    <InstallExecuteSequence>
+      <Custom Action="CopySoundFiles" After="InstallFinalize">NOT Installed</Custom>
+      <Custom Action='LaunchFile' After='InstallFinalize'>NOT Installed</Custom>
+    </InstallExecuteSequence>
+    
+	</Product>
+</Wix>
