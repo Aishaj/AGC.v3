@@ -13,6 +13,8 @@ Main features:
 
 * Functionality to customize how events data is displayed
 
+* Functionality of looking at another callendar and comparing two or more calendars
+
 
 Installation and First run:
 
